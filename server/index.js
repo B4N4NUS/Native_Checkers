@@ -11,6 +11,7 @@ app.get('/', function (req, res) {
   res.send('Hello');
 });
 var players = []
+var queue = []
 
 io.on('connection', (socket) => {
   if (players.length === 4) {
@@ -53,7 +54,7 @@ io.on('connection', (socket) => {
   })
   socket.on('disconnect', () => {
     console.log(socket.id + ' user disconnected');
-    players = []
+    // players = []
     socket.broadcast.emit("game-ended")
   });
 });

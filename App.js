@@ -36,14 +36,26 @@ function HomeScreen({ navigation }) {
           </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Mann')}> 
+        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Mann')}>
           <Text style={styles.text}>
             Mann vs. Machine
           </Text>
         </TouchableOpacity>
+
+        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Mann1v1')}>
+          <Text style={styles.text}>
+            Mann vs. Machine Duel
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('MannCoop')}>
+          <Text style={styles.text}>
+            Mann vs. Machine Coop
+          </Text>
+        </TouchableOpacity>
       </LinearGradient>
-      
-      <TouchableOpacity  style={styles.button_corner} onPress={() => navigation.navigate('Settings')}> 
+
+      <TouchableOpacity style={styles.button_corner} onPress={() => navigation.navigate('Settings')}>
         <Image style={{ flex: 1, alignContent: 'center', width: 40, height: undefined, resizeMode: 'contain', }} source={require('./setting.png')} />
       </TouchableOpacity>
     </>
@@ -60,7 +72,7 @@ function PlayGame4PL({ navigation }) {
 function PlayGame2PL({ navigation }) {
 
   return (
-    <LinearGradient start={{ x: 0, y: 0.75 }} end={{ x: 1, y: 0.25 }} colors={[ '#1FA2FF',  '#78ffd6','#a8ff78',]} style={{ flex: 1, alignItems: 'center', justifyContent: 'center', }}>
+    <LinearGradient start={{ x: 0, y: 0.75 }} end={{ x: 1, y: 0.25 }} colors={['#1FA2FF', '#78ffd6', '#a8ff78',]} style={{ flex: 1, alignItems: 'center', justifyContent: 'center', }}>
       <Game mode={'2PL'} />
     </LinearGradient>
   );
@@ -69,6 +81,20 @@ function PlayGameMann({ navigation }) {
   return (
     <LinearGradient start={{ x: 0, y: 0.75 }} end={{ x: 1, y: 0.25 }} colors={['#1FA2FF', '#a17fe0', '#5D26C1']} style={{ flex: 1, alignItems: 'center', justifyContent: 'center', }}>
       <Game mode={'Mann'} />
+    </LinearGradient>
+  );
+}
+function PlayGameMann1v1({ navigation }) {
+  return (
+    <LinearGradient start={{ x: 0, y: 0.75 }} end={{ x: 1, y: 0.25 }} colors={['#1FA2FF', '#a17fe0', '#5D26C1']} style={{ flex: 1, alignItems: 'center', justifyContent: 'center', }}>
+      <Game mode={'Mann1V1'} />
+    </LinearGradient>
+  );
+}
+function PlayGameMannCoop({ navigation }) {
+  return (
+    <LinearGradient start={{ x: 0, y: 0.75 }} end={{ x: 1, y: 0.25 }} colors={['#1FA2FF', '#a17fe0', '#5D26C1']} style={{ flex: 1, alignItems: 'center', justifyContent: 'center', }}>
+      <Game mode={'MannCoop'} />
     </LinearGradient>
   );
 }
@@ -94,18 +120,38 @@ export default function App() {
   return (
     <NavigationContainer>
       <Stack.Navigator initialRouteName="Home">
-        <Stack.Screen name="Home" component={HomeScreen} options={{ headerTransparent: true, animationTypeForReplace: 'pop',
-              animation:'fade'}} />
-        <Stack.Screen name="4 Players Local" component={PlayGame4PL} options={{ headerTransparent: true, animationTypeForReplace: 'pop',
-              animation:'fade'}} />
-        <Stack.Screen name="2 Players Local" component={PlayGame2PL} options={{ headerTransparent: true, animationTypeForReplace: 'pop',
-              animation:'fade'}} />
-        <Stack.Screen name="4 Players Online" component={PlayGame4PO} options={{ headerTransparent: true, animationTypeForReplace: 'pop',
-              animation:'fade'}} />
-        <Stack.Screen name="Mann" component={PlayGameMann} options={{ headerTransparent: true, animationTypeForReplace: 'pop',
-              animation:'fade'}} />
-        <Stack.Screen name="Settings" component={GetSettings} options={{ headerTransparent: true, animationTypeForReplace: 'pop',
-              animation:'fade'}} />
+        <Stack.Screen name="Home" component={HomeScreen} options={{
+          headerTransparent: true, animationTypeForReplace: 'pop',
+          animation: 'fade'
+        }} />
+        <Stack.Screen name="4 Players Local" component={PlayGame4PL} options={{
+          headerTransparent: true, animationTypeForReplace: 'pop',
+          animation: 'fade'
+        }} />
+        <Stack.Screen name="2 Players Local" component={PlayGame2PL} options={{
+          headerTransparent: true, animationTypeForReplace: 'pop',
+          animation: 'fade'
+        }} />
+        <Stack.Screen name="4 Players Online" component={PlayGame4PO} options={{
+          headerTransparent: true, animationTypeForReplace: 'pop',
+          animation: 'fade'
+        }} />
+        <Stack.Screen name="Mann" component={PlayGameMann} options={{
+          headerTransparent: true, animationTypeForReplace: 'pop',
+          animation: 'fade'
+        }} />
+        <Stack.Screen name="Mann1v1" component={PlayGameMann1v1} options={{
+          headerTransparent: true, animationTypeForReplace: 'pop',
+          animation: 'fade'
+        }} />
+        <Stack.Screen name="MannCoop" component={PlayGameMannCoop} options={{
+          headerTransparent: true, animationTypeForReplace: 'pop',
+          animation: 'fade'
+        }} />
+        <Stack.Screen name="Settings" component={GetSettings} options={{
+          headerTransparent: true, animationTypeForReplace: 'pop',
+          animation: 'fade'
+        }} />
       </Stack.Navigator>
     </NavigationContainer>
   );

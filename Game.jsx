@@ -25,6 +25,17 @@ export class Game extends React.Component {
     }
   }
 
+  gameOver(text) {
+    // alert("Someone disconnected\nGame has ended")
+    this.setState({
+      squares: this.state.squares.map(x => null),
+      disableButtons: true,
+      text: text,
+      spectator: true,
+      ended: true
+    }, () => console.log("Game Ended"))
+  }
+
   componentWillUnmount() {
     if (this.state.online) {
       this.state.socket.disconnect()
@@ -38,7 +49,8 @@ export class Game extends React.Component {
     let dead = []
     let connectToServer = false
     let showDialog = false
-    let meat = []
+    let meat = [true, true, true, true]
+    let manCoop = false
 
     if (props.mode) {
       switch (props.mode) {
@@ -89,6 +101,38 @@ export class Game extends React.Component {
         }
         case 'Mann': {
           squaress = [
+            // 'D', 'D', 'D', 'N', 'N', 'N',
+            // 'D', 'D', null, null, 'N', 'N',
+            // 'D', null, null, null, null, 'N',
+            // 'M', null, null, null, null, 'S',
+            // 'M', 'M', null, null, 'S', 'S',
+            // 'M', 'M', 'M', 'S', 'S', 'S',
+            null, 'D', null, 'NQ', 'NQ', 'NQ',
+            null, null, null, null, null, 'NQ',
+            null, null, null, null, null, 'NQ',
+            'M', null, null, null, null, 'S',
+            'M', 'M', null, null, 'S', 'S',
+            'M', 'M', 'M', 'S', 'S', 'S',
+          ]
+          dead = [false, false, false, false]
+          meat = [true, false, false, false]
+          break
+        }
+        case 'Mann1V1': {
+          squaress = [
+            'D', 'D', 'D', null, null, null,
+            'D', 'D', null, null, null, null,
+            'D', null, null, null, null, null,
+            null, null, null, null, null, 'S',
+            null, null, null, null, 'S', 'S',
+            null, null, null, 'S', 'S', 'S',
+          ]
+          dead = [false, true, false, true]
+          meat = [true, false, false, false]
+          break
+        }
+        case 'MannCoop': {
+          squaress = [
             'D', 'D', 'D', 'N', 'N', 'N',
             'D', 'D', null, null, 'N', 'N',
             'D', null, null, null, null, 'N',
@@ -97,7 +141,8 @@ export class Game extends React.Component {
             'M', 'M', 'M', 'S', 'S', 'S',
           ]
           dead = [false, false, false, false]
-          meat = [true, false, false, false]
+          meat = [true, false, true, false]
+          manCoop = true
           break
         }
       }
@@ -143,12 +188,7 @@ export class Game extends React.Component {
         alert("You entered forbidden name!\nBut don't worry\nWe generated you a new unique name")
       });
       socket.on('game-ended', (playerId) => {
-        // alert("Someone disconnected\nGame has ended")
-        this.setState({
-          squares: this.state.squares.map(x => null),
-          disableButtons: true,
-          text: "Someone disconnected\nGame has ended"
-        }, () => console.log("Game Ended"))
+        this.gameOver("Someone disconnected\nGame has ended")
 
       });
       socket.on('this-player-id', (playerId) => {
@@ -187,7 +227,9 @@ export class Game extends React.Component {
       activeDialog: showDialog,
       spectator: false,
       disableButtons: false,
-      meat: meat
+      meat: meat,
+      manCoop: manCoop,
+      ended: false,
     };
   }
 
@@ -201,318 +243,345 @@ export class Game extends React.Component {
       currentCheck: 'D',
       lock: false
     }, () => this.logEverything())
-
-    this.logEverything()
   }
 
-  // Отработка нажатия на клетку доски
-  handleClick(i) {
-    if (this.state.online && this.state.currentSocketId !== this.state.thisSocketId) {
-      return
-    } else {
-      console.log(this.state.currentSocketId !== this.state.thisSocketId)
-    }
+  // // Отработка нажатия на клетку доски
+  // handleClick(i) {
+  //   if (this.state.online && this.state.currentSocketId !== this.state.thisSocketId) {
+  //     return
+  //   } else {
+  //     console.log(this.state.currentSocketId !== this.state.thisSocketId)
+  //   }
 
-    // // Доска
-    let squares = this.state.squares
-    // Если тыкнули на пустую клетку
-    if (!squares[i]) {
-      return
-    }
+  //   // // Доска
+  //   let squares = this.state.squares
+  //   // Если тыкнули на пустую клетку
+  //   if (!squares[i]) {
+  //     return
+  //   }
 
-    // Если игрок еще не выбрал шашку и тыкнул на одну из своих
-    if (squares[i].charAt(0) === this.playerNames[this.state.currentPlayer % 4] && !this.state.handling) {
-      this.setState({
-        currentCheck: squares[i],
-      }, () => this.logEverything())
-      // Хайлайтим ходы для выбранной шашки
-      squares[i] = squares[i].toLocaleLowerCase()
-      squares = this.checkMovement(squares, i, false)
-      this.setState({
-        currentActiveCell: i,
-        handling: true,
-        squares: squares
-      }, () => this.logEverything())
-
-
-    } else {
-      // Если игрок уже тыкал на другую шашку и хочет ее сменить, при этом не ходя предыдущей
-      if (!this.state.lock && this.state.handling && squares[i].charAt(0) === squares[this.state.currentActiveCell].charAt(0).toUpperCase()) {
-        // Возвращаем предыдущую к состоянию до хайлайтов
-        squares = this.reverseSelection(squares)
-
-        // Запоминаем новую шашку
-        this.setState({
-          currentActiveCell: i,
-          currentCheck: squares[i],
-          handling: true,
-          squares: squares
-        }, () => this.logEverything())
-
-        // Смотрим возможные ходы для новой
-        squares[i] = squares[i].toLocaleLowerCase()
-        squares = this.checkMovement(squares, i, false)
-      }
-    }
-
-    // Если игрок выбрал шашку и тыкнул в один из хайлайтов
-    if (this.state.handling && squares[i] === 'v') {
-      // Заменяем хайлайт на выбранную шашку
-      squares[i] = this.state.currentCheck
-
-      // Смотрим, можно ли продолжить ход, также удаляем фишки, стоявшие на пути игрока
-      let resume = false
-      let eaten = false
-      if (this.state.currentActiveCell % 6 < i % 6 && Math.abs(this.state.currentActiveCell - i) > 1) {
-        if (squares[i - 1] !== 'v') {
-          eaten = true
-          squares[i - 1] = null
-        }
-        resume = true
-      }
-      if (Math.floor(this.state.currentActiveCell / 6) < Math.floor(i / 6) && this.state.currentActiveCell % 6 === i % 6 && Math.abs(this.state.currentActiveCell - i) > 6) {
-        if (squares[i - 6] !== 'v') {
-          eaten = true
-          squares[i - 6] = null
-        }
-        resume = true
-      }
-      if (this.state.currentActiveCell % 6 > i % 6 && Math.abs(this.state.currentActiveCell - i) > 1) {
-        if (squares[i + 1] !== 'v') {
-          eaten = true
-          squares[i + 1] = null
-        }
-        resume = true
-      }
-      if (Math.floor(this.state.currentActiveCell / 6) > Math.floor(i / 6) && this.state.currentActiveCell % 6 === i % 6 && Math.abs(this.state.currentActiveCell - i) > 6) {
-        if (squares[i + 6] !== 'v') {
-          eaten = true
-          squares[i + 6] = null
-        }
-        resume = true
-      }
-
-      // Смотрим, можно ли сделать из шашки дамку
-      squares = this.makeQueen(this.validate(squares), i)
-
-      // На всякий запоминаем положение доски и скидываем лок на выбор другой шашки
-      this.setState({
-        squares: squares,
-        handling: false,
-        lock: false,
-      }, () => this.logEverything())
+  //   // Если игрок еще не выбрал шашку и тыкнул на одну из своих
+  //   if (squares[i].charAt(0) === this.playerNames[this.state.currentPlayer % 4] && !this.state.handling) {
+  //     this.setState({
+  //       currentCheck: squares[i],
+  //     }, () => this.logEverything())
+  //     // Хайлайтим ходы для выбранной шашки
+  //     squares[i] = squares[i].toLocaleLowerCase()
+  //     squares = this.checkMovement(squares, i, false)
+  //     this.setState({
+  //       currentActiveCell: i,
+  //       handling: true,
+  //       squares: squares
+  //     }, () => this.logEverything())
 
 
-      // Если можно продолжить
-      if (eaten && resume && this.canResume(squares, i, this.state.currentCheck)) {
-        // Хайлайтим возможные ходы
-        squares = this.checkMovement(squares, i, true)
-        this.setState({
-          currentCheck: squares[i],
-        })
-        squares[i] = squares[i].toLocaleLowerCase()
-        this.setState({
-          squares: squares,
-          currentPlayer: this.state.currentPlayer,
-          handling: true,
-          currentActiveCell: i,
-          lock: true,
-        }, () => this.logEverything())
+  //   } else {
+  //     // Если игрок уже тыкал на другую шашку и хочет ее сменить, при этом не ходя предыдущей
+  //     if (!this.state.lock && this.state.handling && squares[i].charAt(0) === squares[this.state.currentActiveCell].charAt(0).toUpperCase()) {
+  //       // Возвращаем предыдущую к состоянию до хайлайтов
+  //       squares = this.reverseSelection(squares)
 
-      } else {
-        // Если продолжить нельзя
-        this.chechAlive(squares)
-        this.setState({
-          squares: this.skipTurn(squares)
-        }, () => this.logEverything())
+  //       // Запоминаем новую шашку
+  //       this.setState({
+  //         currentActiveCell: i,
+  //         currentCheck: squares[i],
+  //         handling: true,
+  //         squares: squares
+  //       }, () => this.logEverything())
+
+  //       // Смотрим возможные ходы для новой
+  //       squares[i] = squares[i].toLocaleLowerCase()
+  //       squares = this.checkMovement(squares, i, false)
+  //     }
+  //   }
+
+  //   // Если игрок выбрал шашку и тыкнул в один из хайлайтов
+  //   if (this.state.handling && squares[i] === 'v') {
+  //     // Заменяем хайлайт на выбранную шашку
+  //     squares[i] = this.state.currentCheck
+
+  //     // Смотрим, можно ли продолжить ход, также удаляем фишки, стоявшие на пути игрока
+  //     let resume = false
+  //     let eaten = false
+  //     if (this.state.currentActiveCell % 6 < i % 6 && Math.abs(this.state.currentActiveCell - i) > 1) {
+  //       if (squares[i - 1] !== 'v') {
+  //         eaten = true
+  //         squares[i - 1] = null
+  //       }
+  //       resume = true
+  //     }
+  //     if (Math.floor(this.state.currentActiveCell / 6) < Math.floor(i / 6) && this.state.currentActiveCell % 6 === i % 6 && Math.abs(this.state.currentActiveCell - i) > 6) {
+  //       if (squares[i - 6] !== 'v') {
+  //         eaten = true
+  //         squares[i - 6] = null
+  //       }
+  //       resume = true
+  //     }
+  //     if (this.state.currentActiveCell % 6 > i % 6 && Math.abs(this.state.currentActiveCell - i) > 1) {
+  //       if (squares[i + 1] !== 'v') {
+  //         eaten = true
+  //         squares[i + 1] = null
+  //       }
+  //       resume = true
+  //     }
+  //     if (Math.floor(this.state.currentActiveCell / 6) > Math.floor(i / 6) && this.state.currentActiveCell % 6 === i % 6 && Math.abs(this.state.currentActiveCell - i) > 6) {
+  //       if (squares[i + 6] !== 'v') {
+  //         eaten = true
+  //         squares[i + 6] = null
+  //       }
+  //       resume = true
+  //     }
+
+  //     // Смотрим, можно ли сделать из шашки дамку
+  //     squares = this.makeQueen(this.validate(squares), i)
+
+  //     // На всякий запоминаем положение доски и скидываем лок на выбор другой шашки
+  //     this.setState({
+  //       squares: squares,
+  //       handling: false,
+  //       lock: false,
+  //     }, () => this.logEverything())
 
 
-      }
-    }
-    // this.chechAlive(squares)
+  //     // Если можно продолжить
+  //     if (eaten && resume && this.canResume(squares, i, this.state.currentCheck)) {
+  //       // Хайлайтим возможные ходы
+  //       squares = this.checkMovement(squares, i, true)
+  //       this.setState({
+  //         currentCheck: squares[i],
+  //       })
+  //       squares[i] = squares[i].toLocaleLowerCase()
+  //       this.setState({
+  //         squares: squares,
+  //         currentPlayer: this.state.currentPlayer,
+  //         handling: true,
+  //         currentActiveCell: i,
+  //         lock: true,
+  //       }, () => this.logEverything())
 
-  }
+  //     } else {
+  //       // Если продолжить нельзя
+  //       this.chechAlive(squares)
+  //       this.setState({
+  //         squares: this.skipTurn(squares)
+  //       }, () => this.logEverything())
+
+
+  //     }
+  //   }
+  //   // this.chechAlive(squares)
+
+  // }
 
   useSkynet() {
-    setTimeout(() => { 
-    let squares = this.state.squares
-    let myChecks = []
-    let player = this.state.currentPlayer % 4
-    for (let i = 0; i < squares.length; i++) {
-      if (squares[i] == this.playerNames[this.state.currentPlayer % 4]) {
-        myChecks[myChecks.length] = i
-      }
-    }
+    setTimeout(() => {
 
-    let moved = false
-    let movesStart = []
-    let movesEnd = []
-    let oneScoreStart = []
-    let oneScoreEnd = []
-    let lock = false
+      let squares = this.state.squares
+      let myChecks = []
+      let player = this.state.currentPlayer % 4
 
-    for (let i = 0; i < myChecks.length; i++) {
-      let score = 0
-
-      // Вправо
-      if (squares[myChecks[i] + 1]) {
-        if (squares[myChecks[i] + 2] === null && squares[myChecks[i]].charAt(0) !== squares[myChecks[i] + 1].charAt(0) && Math.floor((myChecks[i] + 2) / 6) === Math.floor(myChecks[i] / 6)) {
-          squares[myChecks[i] + 2] = 'V'
-          score = 2
+      // Получаем информацию о индексах шашек ИИ.
+      for (let i = 0; i < squares.length; i++) {
+        if (squares[i] && squares[i].charAt(0) === this.playerNames[this.state.currentPlayer % 4]) {
+          myChecks[myChecks.length] = i
         }
       }
-      else {
-        if (!lock && myChecks[i] < 35 && Math.floor((myChecks[i] + 1) / 6) === Math.floor(myChecks[i] / 6) && (player === 0 || player === 3))
-          squares[myChecks[i] + 1] = 'v'
-          score = score>1? 2: 1
-      }
 
-      // Вниз
-      if (squares[myChecks[i] + 6]) {
-        if (squares[myChecks[i] + 12] === null && squares[myChecks[i]].charAt(0) !== squares[myChecks[i] + 6].charAt(0) && myChecks[i] + 6 < 30 && myChecks[i] + 6 > 5) {
-          squares[myChecks[i] + 12] = 'V'
-          score = 2
+      let movesStart = []
+      let movesEnd = []
+      let oneScoreStart = []
+      let oneScoreEnd = []
+      let lock = false
+
+      // Проходимся по всем шашкам ИИ.
+      for (let i = 0; i < myChecks.length; i++) {
+        let score = 0
+
+
+        if (squares[myChecks[i]].endsWith('Q')) {
+          // Влево
+          for (let q = myChecks[i] - 1; q >= Math.floor(myChecks[i] / 6) * 6; q--) {
+            if (squares[q] !== null) {
+              if (squares[q].charAt(0) !== squares[myChecks[i]].charAt(0) && squares[q - 1] === null && q !== Math.floor(myChecks[i] % 6) * 6) {
+                squares[q - 1] = 'V'
+                score = 2
+              }
+              break
+            } else {
+              squares[q] = 'v'
+              score = score > 1 ? 2 : 1
+            }
+          }
+          // Вправо
+          for (let q = myChecks[i] + 1; q <= Math.floor(myChecks[i] / 6) * 6 + 5; q++) {
+            if (squares[q] !== null) {
+              if (squares[q].charAt(0) !== squares[myChecks[i]].charAt(0) && squares[q + 1] === null && q !== Math.floor(myChecks[i] % 6) * 6 + 5) {
+                squares[q + 1] = 'V'
+                score = 2
+              }
+              break
+            } else {
+              squares[q] = 'v'
+              score = score > 1 ? 2 : 1
+            }
+          }
+          // Вверх
+          for (let q = myChecks[i] - 6; q > 0; q -= 6) {
+            if (squares[q] !== null) {
+              if (squares[q].charAt(0) !== squares[myChecks[i]].charAt(0) && squares[q - 6] === null && q !== myChecks[i] % 6) {
+                squares[q - 6] = 'V'
+                score = 2
+              }
+              break
+            } else {
+              squares[q] = 'v'
+              score = score > 1 ? 2 : 1
+            }
+          }
+          // Вниз
+          for (let q = myChecks[i] + 6; q < 36; q += 6) {
+            if (squares[q] !== null) {
+              if (squares[q].charAt(0) !== squares[myChecks[i]].charAt(0) && squares[q + 6] === null && q !== 30 + myChecks[i] % 6) {
+                squares[q + 6] = 'V'
+                score = 2
+              }
+              break
+            } else {
+              squares[q] = 'v'
+              score = score > 1 ? 2 : 1
+            }
+          }
         }
-      }
-      else {
-        if (!lock && myChecks[i] < 30 && (player === 0 || player === 1))
-          squares[myChecks[i] + 6] = 'v'
-          score = score>1? 2: 1
-      }
+        else {
+          // Вправо
+          if (squares[myChecks[i] + 1]) {
+            if (squares[myChecks[i] + 2] === null && squares[myChecks[i]].charAt(0) !== squares[myChecks[i] + 1].charAt(0) && Math.floor((myChecks[i] + 2) / 6) === Math.floor(myChecks[i] / 6)) {
+              squares[myChecks[i] + 2] = 'V'
+              score = 2
+            }
+          }
+          else {
+            if (!lock && myChecks[i] < 35 && Math.floor((myChecks[i] + 1) / 6) === Math.floor(myChecks[i] / 6) && (player === 0 || player === 3))
+              squares[myChecks[i] + 1] = 'v'
+            score = score > 1 ? 2 : 1
+          }
 
-      // Влево
-      if (squares[myChecks[i] - 1]) {
-        if (squares[myChecks[i] - 2] === null && squares[myChecks[i]].charAt(0) !== squares[myChecks[i] - 1].charAt(0) && Math.floor((myChecks[i] - 2) / 6) === Math.floor(myChecks[i] / 6)) {
-          squares[myChecks[i] - 2] = 'V'
-          score = 2
+          // Вниз
+          if (squares[myChecks[i] + 6]) {
+            if (squares[myChecks[i] + 12] === null && squares[myChecks[i]].charAt(0) !== squares[myChecks[i] + 6].charAt(0) && myChecks[i] + 6 < 30 && myChecks[i] + 6 > 5) {
+              squares[myChecks[i] + 12] = 'V'
+              score = 2
+            }
+          }
+          else {
+            if (!lock && myChecks[i] < 30 && (player === 0 || player === 1))
+              squares[myChecks[i] + 6] = 'v'
+            score = score > 1 ? 2 : 1
+          }
+
+          // Влево
+          if (squares[myChecks[i] - 1]) {
+            if (squares[myChecks[i] - 2] === null && squares[myChecks[i]].charAt(0) !== squares[myChecks[i] - 1].charAt(0) && Math.floor((myChecks[i] - 2) / 6) === Math.floor(myChecks[i] / 6)) {
+              squares[myChecks[i] - 2] = 'V'
+              score = 2
+            }
+          }
+          else {
+            if (!lock && myChecks[i] > 0 && Math.floor((myChecks[i] - 1) / 6) === Math.floor(myChecks[i] / 6) && (player === 1 || player === 2))
+              squares[myChecks[i] - 1] = 'v'
+            score = score > 1 ? 2 : 1
+          }
+
+          // Вверх
+          if (squares[myChecks[i] - 6]) {
+            if (squares[myChecks[i] - 12] === null && squares[myChecks[i]].charAt(0) !== squares[myChecks[i] - 6].charAt(0) && myChecks[i] - 6 < 30 && myChecks[i] - 6 > 5) {
+              squares[myChecks[i] - 12] = 'V'
+              score = 2
+            }
+          }
+          else {
+            if (!lock && myChecks[i] > 5 && (player === 2 || player === 3))
+              squares[myChecks[i] - 6] = 'v'
+            score = score > 1 ? 2 : 1
+          }
         }
-      }
-      else {
-        if (!lock && myChecks[i] > 0 && Math.floor((myChecks[i] - 1) / 6) === Math.floor(myChecks[i] / 6) && (player === 1 || player === 2))
-          squares[myChecks[i] - 1] = 'v'
-          score = score>1? 2: 1
-      }
 
-      // Вверх
-      if (squares[myChecks[i] - 6]) {
-        if (squares[myChecks[i] - 12] === null && squares[myChecks[i]].charAt(0) !== squares[myChecks[i] - 6].charAt(0) && myChecks[i] - 6 < 30 && i - 6 > 5) {
-          squares[myChecks[i] - 12] = 'V'
-          score = 2
+        if (score === 0) {
+          continue
         }
-      }
-      else {
-        if (!lock && i > 5 && (player === 2 || player === 3))
-          squares[i - 6] = 'v'
-        score = score>1? 2: 1 
-      }
 
-      if (score === 0) {
-        continue
-      }
-
-      let bestMoves = []
-      for (let j = 0; j < squares.length; j++) {
-        if (score === 1 && squares[j] === 'v') {
-          bestMoves[bestMoves.length] = j
+        let bestMoves = []
+        for (let j = 0; j < squares.length; j++) {
+          if (score === 1 && squares[j] === 'v') {
+            bestMoves[bestMoves.length] = j
+          }
+          if (score === 2 && squares[j] === 'V') {
+            bestMoves[bestMoves.length] = j
+          }
         }
-        if (score === 2 && squares[j] === 'v') {
-          bestMoves[bestMoves.length] = j
+        if (bestMoves.length === 0) {
+          continue
         }
+        if (score === 2) {
+          movesStart[movesStart.length] = myChecks[i]
+          movesEnd[movesEnd.length] = bestMoves[Math.floor(Math.random() * bestMoves.length)]
+        } else {
+          oneScoreStart[oneScoreStart.length] = myChecks[i]
+          oneScoreEnd[oneScoreEnd.length] = bestMoves[Math.floor(Math.random() * bestMoves.length)]
+        }
+        squares = squares.map(x => x ? (x.toLocaleLowerCase() === 'v' ? null : x) : null)
       }
-      if (bestMoves.length === 0) {
-        continue
+
+      console.log(oneScoreStart)
+      console.log(oneScoreEnd)
+      console.log(movesStart)
+      console.log(movesEnd)
+
+      // console.log(this.checkMovement(squares,oneScoreStart[0], false))
+
+      if (movesStart.length > 0) {
+        let rnd = Math.floor(Math.random() * movesStart.length)
+        squares[movesStart[rnd]] = squares[movesStart[rnd]].toLocaleLowerCase()
+        this.setState({
+          currentActiveCell: movesStart[rnd],
+          currentCheck: squares[movesStart[rnd]].toUpperCase(),
+          currentPlayer: player,
+          squares: this.checkMovement(squares, movesStart[rnd], false),
+          handling: true,
+        }, () => {
+          let move = this.handleClick(movesEnd[rnd])
+          let timerId = setInterval(() => {
+            if ((move && move.includes('v'))) {
+              move = this.handleClick(move.findIndex(x => x && x === 'v'))
+            } else {
+              clearInterval(timerId)
+            }
+          }, 1000);
+        })
+        console.log("AI MOVED 2")
+        return
       }
-      if (score === 2) {
-        movesStart[movesStart.length] = myChecks[i]
-        movesEnd[movesEnd.length] = bestMoves[Math.floor(Math.random() * bestMoves.length)]
-      } else {
-        oneScoreStart[oneScoreStart.length] = myChecks[i]
-        oneScoreEnd[oneScoreEnd.length] = bestMoves[Math.floor(Math.random() * bestMoves.length)]
+      if (oneScoreStart.length > 0) {
+        let rnd = Math.floor(Math.random() * oneScoreStart.length)
+        squares[oneScoreStart[rnd]] = squares[oneScoreStart[rnd]].toLocaleLowerCase()
+        this.setState({
+          currentActiveCell: oneScoreStart[rnd],
+          currentCheck: squares[oneScoreStart[rnd]].toUpperCase(),
+          currentPlayer: player,
+          squares: this.checkMovement(squares, oneScoreStart[rnd], false),
+          handling: true,
+        }, () => this.handleClick(oneScoreEnd[rnd]))
+        console.log("AI MOVED 1")
+        return
       }
-      squares = squares.map(x => x? (x.toLocaleLowerCase() === 'v'? null: x): null)
-    }
+      console.log("Retarded AI Did Nothing Wrong")
+      this.skipTurn()
 
-    console.log(oneScoreStart)
-    console.log(oneScoreEnd)
-    console.log(movesStart)
-    console.log(movesEnd)
-
-    // console.log(this.checkMovement(squares,oneScoreStart[0], false))
-
-    if (movesStart.length === 0) {
-      let rnd = Math.floor(Math.random() * oneScoreStart.length)
-      squares[oneScoreStart[rnd]] = squares[oneScoreStart[rnd]].toLocaleLowerCase()
-      this.setState({
-        currentActiveCell: oneScoreStart[rnd],
-        currentCheck: squares[oneScoreStart[rnd]].toUpperCase(), 
-        currentPlayer: player,
-        squares: this.checkMovement(squares,oneScoreStart[rnd], false),
-        handling: true,
-      }, () => this.handleClick(oneScoreEnd[rnd]))
-
-    }
-  },1000)
-
-    // // Достаем полный номинал выбранной игроком шашки
-    // let check = squares[i].toUpperCase()
-    // // Смотрим, является ли она дамкой
-    // if (check.endsWith('Q')) {
-    //   // Влево
-    //   for (let q = i - 1; q >= Math.floor(i / 6) * 6; q--) {
-    //     if (squares[q] !== null) {
-    //       if (squares[q].charAt(0) !== check.charAt(0) && squares[q - 1] === null && q !== Math.floor(i % 6) * 6) {
-    //         squares[q - 1] = 'v'
-    //       }
-    //       break
-    //     } else {
-    //       squares[q] = 'v'
-    //     }
-    //   }
-    //   // Вправо
-    //   for (let q = i + 1; q <= Math.floor(i / 6) * 6 + 5; q++) {
-    //     if (squares[q] !== null) {
-    //       if (squares[q].charAt(0) !== check.charAt(0) && squares[q + 1] === null && q !== Math.floor(i % 6) * 6 + 5) {
-    //         squares[q + 1] = 'v'
-    //       }
-    //       break
-    //     } else {
-    //       squares[q] = 'v'
-    //     }
-    //   }
-    //   // Вверх
-    //   for (let q = i - 6; q > 0; q -= 6) {
-    //     if (squares[q] !== null) {
-    //       if (squares[q].charAt(0) !== check.charAt(0) && squares[q - 6] === null && q !== i % 6) {
-    //         squares[q - 6] = 'v'
-    //       }
-    //       break
-    //     } else {
-    //       squares[q] = 'v'
-    //     }
-    //   }
-    //   // Вниз
-    //   for (let q = i + 6; q < 36; q += 6) {
-    //     if (squares[q] !== null) {
-    //       if (squares[q].charAt(0) !== check.charAt(0) && squares[q + 6] === null && q !== 30 + i % 6) {
-    //         squares[q + 6] = 'v'
-    //       }
-    //       break
-    //     } else {
-    //       squares[q] = 'v'
-    //     }
-    //   }
-
-    // } else {
-
-    // }
-
-
-
-
+    }, 1000)
   }
 
-  handleClick(i) {
-    if (this.state.online && this.state.currentSocketId !== this.state.thisSocketId) {
+  handleClick(i, ai) {
+    if (this.state.online && this.state.currentSocketId !== this.state.thisSocketId || this.state.ended) {
       return
     }
 
@@ -632,6 +701,7 @@ export class Game extends React.Component {
 
       }
     }
+    return squares
     // this.chechAlive(squares)
 
   }
@@ -736,8 +806,11 @@ export class Game extends React.Component {
     ded[this.state.currentPlayer % 4] = true
     this.setState({
       dead: ded,
-    }, () => this.logEverything())
-    this.skipTurn()
+      squares: this.state.squares.map(x => x ? (x.charAt(0).toUpperCase() === this.playerNames[this.state.currentPlayer % 4] ? null : x) : null)
+    }, () => {
+      this.logEverything()
+      this.skipTurn()
+    })
   }
 
   // Переадресация хода на следующего игрока
@@ -752,9 +825,21 @@ export class Game extends React.Component {
         break
       }
     }
-    if (turn === this.state.currentPlayer) {
-      alert("Winner")
+    let deadMeat = true, deadAI = true
+    for (let i = 0; i < 4; i++) {
+      if (!this.state.dead[i]) {
+        if (this.state.meat[i]) {
+          deadMeat = false
+        } else {
+          deadAI = false
+        }
+      }
     }
+    console.log("MEAT: " + deadMeat + " AI: " + deadAI)
+    if (turn === this.state.currentPlayer || (this.state.manCoop && (deadAI || deadMeat))) {
+      this.gameOver("Game Over")
+    }
+
     this.setState({
       currentPlayer: turn
     }, () => {
@@ -923,7 +1008,7 @@ export class Game extends React.Component {
         </DialogInput>
         }
 
-        {this.state.online && <View style={styles.info}>
+        {(this.state.online || this.state.spectator) && <View style={styles.info}>
           <Text style={styles.text}>{this.state.text}</Text>
         </View>
         }
