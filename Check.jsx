@@ -2,6 +2,7 @@ import { StyleSheet, Text, View, Image } from 'react-native';
 import crown from './crown.png'
 
 export function Check(param) {
+    // BRUH
     switch (param.value) {
         case 'D':
             return <View style={[styles.check_piece,{backgroundColor: 'rgba(255,255,255,1)'}]}></View>

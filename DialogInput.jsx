@@ -9,6 +9,8 @@ import {
     View,
 } from 'react-native';
 
+// Копипаст исходников библы react-native-dialog-input с переписаными стилями для корректной работы с native-web
+
 class DialogInput extends PureComponent {
     constructor(props) {
         super(props);

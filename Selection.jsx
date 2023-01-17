@@ -1,8 +1,8 @@
 import React from 'react';
-import { Square } from './Square';
 import { StyleSheet, Text, View, Button, TouchableOpacity, TextInput } from 'react-native';
 import { AddressSettings } from './Settings.js';
 
+// Настройки подключения к серверу
 export function Selection() {
     let currentText = AddressSettings.address
     const setText = text => {
@@ -12,7 +12,6 @@ export function Selection() {
     const apply = text => {
         AddressSettings.address = text
     }
-
 
     return (
         <View className="AddressSettings-info" style={{ flexDirection: 'column' }}>
@@ -57,26 +56,6 @@ const styles = {
         margin: 10,
         paddingVertical: 12,
         paddingHorizontal: 28,
-        borderRadius: 4,
-        elevation: 3,
-        backgroundColor: 'black',
-    },
-    info: {
-        alignItems: 'center',
-        justifyContent: 'center',
-        margin: 10,
-        paddingVertical: 12,
-        paddingHorizontal: 28,
-        borderRadius: 4,
-        elevation: 3,
-        backgroundColor: 'black',
-        opacity: 0.6
-    },
-    imageButton: {
-        alignItems: 'center',
-        justifyContent: 'center',
-        margin: 10,
-        padding: 5,
         borderRadius: 4,
         elevation: 3,
         backgroundColor: 'black',

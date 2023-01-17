@@ -2,7 +2,9 @@ import React from 'react';
 import { Square } from './Square';
 import { StyleSheet, Text, View } from 'react-native';
 
+// Доска
 export class Board extends React.Component {
+  // Перекидываем метод нажатия из игры на клетку внутри доски
   renderSquare(i) {
     return (
       <Square

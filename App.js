@@ -7,17 +7,19 @@ import { createNativeStackNavigator } from '@react-navigation/native-stack';
 import { LinearGradient } from 'expo-linear-gradient'
 import { Selection } from './Selection';
 import { AddressSettings } from './Settings.js';
-// import {Background} from './background.jsx'
-
-// import AnimatedLinearGradient, {presetColors} from 'react-native-animated-linear-gradient'
-// import {LinearGradient} from 'expo-linear-gradient';
 
 
 function HomeScreen({ navigation }) {
-
   return (
     <>
       <LinearGradient start={{ x: 0, y: 0.75 }} end={{ x: 1, y: 0.25 }} colors={['#1FA2FF', '#12D8FA', '#A6FFCB']} style={{ flex: 1, alignItems: 'center', justifyContent: 'center', }}>
+        
+        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('2 Players Local')}>
+          <Text style={styles.text}>
+            2 Players Local 
+          </Text>
+        </TouchableOpacity>
+
         <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('4 Players Local')}>
           <Text style={styles.text}>
             4 Players Local
@@ -30,15 +32,33 @@ function HomeScreen({ navigation }) {
           </Text>
         </TouchableOpacity>
 
-        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('2 Players Local')}>
+        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Smoll')}>
           <Text style={styles.text}>
-            2 Players Local
+            4 Players Small Local
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Queens Gambit')}>
+          <Text style={styles.text}>
+            Queen's Gambit
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('All Hail The Queen')}>
+          <Text style={styles.text}>
+            All Hail The Queen
           </Text>
         </TouchableOpacity>
 
         <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Mann')}>
           <Text style={styles.text}>
             Mann vs. Machine
+          </Text>
+        </TouchableOpacity>
+
+        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('MannHard')}>
+          <Text style={styles.text}>
+            Mann vs. Machine (Hard)
           </Text>
         </TouchableOpacity>
 
@@ -53,6 +73,12 @@ function HomeScreen({ navigation }) {
             Mann vs. Machine Coop
           </Text>
         </TouchableOpacity>
+
+        <TouchableOpacity style={styles.button} onPress={() => navigation.navigate('Bullying Stupid Machine')}>
+          <Text style={styles.text}>
+            Bullying Dumb Machine
+          </Text>
+        </TouchableOpacity>
       </LinearGradient>
 
       <TouchableOpacity style={styles.button_corner} onPress={() => navigation.navigate('Settings')}>
@@ -62,6 +88,34 @@ function HomeScreen({ navigation }) {
   );
 }
 
+function PlayGame4PLSmoll({ navigation }) {
+  return (
+    <LinearGradient start={{ x: 0, y: 0.75 }} end={{ x: 1, y: 0.25 }} colors={['#a7f542', '#22c1c3', '#fdbb2d']} style={{ flex: 1, alignItems: 'center', justifyContent: 'center', }}>
+      <Game mode={'Smoll'} />
+    </LinearGradient>
+  );
+}
+function PlayGameBullying({ navigation }) {
+  return (
+    <LinearGradient start={{ x: 0, y: 0.75 }} end={{ x: 1, y: 0.25 }} colors={['#1FA2FF', '#7e42f5', '#f542dd']} style={{ flex: 1, alignItems: 'center', justifyContent: 'center', }}>
+      <Game mode={'Bullying Stupid Machine'} />
+    </LinearGradient>
+  );
+}
+function PlayGameQueen({ navigation }) {
+  return (
+    <LinearGradient start={{ x: 0, y: 0.75 }} end={{ x: 1, y: 0.25 }} colors={['#f55142', '#bf665e', '#967774']} style={{ flex: 1, alignItems: 'center', justifyContent: 'center', }}>
+      <Game mode={'All Hail The Queen'} />
+    </LinearGradient>
+  );
+}
+function PlayGameGambit({ navigation }) {
+  return (
+    <LinearGradient start={{ x: 0, y: 0.75 }} end={{ x: 1, y: 0.25 }} colors={['#3e02f0', '#5e3dbf', '#7c7496']} style={{ flex: 1, alignItems: 'center', justifyContent: 'center', }}>
+      <Game mode={'Queens Gambit'} />
+    </LinearGradient>
+  );
+}
 function PlayGame4PL({ navigation }) {
   return (
     <LinearGradient start={{ x: 0, y: 0.75 }} end={{ x: 1, y: 0.25 }} colors={['#1FA2FF', '#22c1c3', '#fdbb2d']} style={{ flex: 1, alignItems: 'center', justifyContent: 'center', }}>
@@ -79,21 +133,28 @@ function PlayGame2PL({ navigation }) {
 }
 function PlayGameMann({ navigation }) {
   return (
-    <LinearGradient start={{ x: 0, y: 0.75 }} end={{ x: 1, y: 0.25 }} colors={['#1FA2FF', '#a17fe0', '#5D26C1']} style={{ flex: 1, alignItems: 'center', justifyContent: 'center', }}>
+    <LinearGradient start={{ x: 0, y: 0.75 }} end={{ x: 1, y: 0.25 }} colors={['#f00289', '#a17fe0', '#5D26C1']} style={{ flex: 1, alignItems: 'center', justifyContent: 'center', }}>
       <Game mode={'Mann'} />
+    </LinearGradient>
+  );
+}
+function PlayGameMannHard({ navigation }) {
+  return (
+    <LinearGradient start={{ x: 0, y: 0.75 }} end={{ x: 1, y: 0.25 }} colors={['#1a000f', '#a17fe0', '#a17fe0', '#1e0238']} style={{ flex: 1, alignItems: 'center', justifyContent: 'center', }}>
+      <Game mode={'MannHard'} />
     </LinearGradient>
   );
 }
 function PlayGameMann1v1({ navigation }) {
   return (
-    <LinearGradient start={{ x: 0, y: 0.75 }} end={{ x: 1, y: 0.25 }} colors={['#1FA2FF', '#a17fe0', '#5D26C1']} style={{ flex: 1, alignItems: 'center', justifyContent: 'center', }}>
+    <LinearGradient start={{ x: 0, y: 0.75 }} end={{ x: 1, y: 0.25 }} colors={['#7841fa', '#4df7ec', '#3afc61']} style={{ flex: 1, alignItems: 'center', justifyContent: 'center', }}>
       <Game mode={'Mann1V1'} />
     </LinearGradient>
   );
 }
 function PlayGameMannCoop({ navigation }) {
   return (
-    <LinearGradient start={{ x: 0, y: 0.75 }} end={{ x: 1, y: 0.25 }} colors={['#1FA2FF', '#a17fe0', '#5D26C1']} style={{ flex: 1, alignItems: 'center', justifyContent: 'center', }}>
+    <LinearGradient start={{ x: 0, y: 0.75 }} end={{ x: 1, y: 0.25 }} colors={['#754374', '#a17fe0', '#acba3d']} style={{ flex: 1, alignItems: 'center', justifyContent: 'center', }}>
       <Game mode={'MannCoop'} />
     </LinearGradient>
   );
@@ -140,6 +201,10 @@ export default function App() {
           headerTransparent: true, animationTypeForReplace: 'pop',
           animation: 'fade'
         }} />
+        <Stack.Screen name="MannHard" component={PlayGameMannHard} options={{
+          headerTransparent: true, animationTypeForReplace: 'pop',
+          animation: 'fade'
+        }} />
         <Stack.Screen name="Mann1v1" component={PlayGameMann1v1} options={{
           headerTransparent: true, animationTypeForReplace: 'pop',
           animation: 'fade'
@@ -149,6 +214,23 @@ export default function App() {
           animation: 'fade'
         }} />
         <Stack.Screen name="Settings" component={GetSettings} options={{
+          headerTransparent: true, animationTypeForReplace: 'pop',
+          animation: 'fade'
+        }} />
+        
+        <Stack.Screen name='Queens Gambit' component={PlayGameGambit} options={{
+          headerTransparent: true, animationTypeForReplace: 'pop',
+          animation: 'fade'
+        }} />
+        <Stack.Screen name='All Hail The Queen' component={PlayGameQueen} options={{
+          headerTransparent: true, animationTypeForReplace: 'pop',
+          animation: 'fade'
+        }} />
+        <Stack.Screen name="Smoll" component={PlayGame4PLSmoll} options={{
+          headerTransparent: true, animationTypeForReplace: 'pop',
+          animation: 'fade'
+        }} />
+        <Stack.Screen name='Bullying Stupid Machine' component={PlayGameBullying} options={{
           headerTransparent: true, animationTypeForReplace: 'pop',
           animation: 'fade'
         }} />
@@ -184,8 +266,8 @@ const styles = StyleSheet.create({
   button: {
     alignItems: 'center',
     justifyContent: 'center',
-    margin: 10,
-    paddingVertical: 12,
+    margin: 6,
+    paddingVertical: 10,
     paddingHorizontal: 28,
     borderRadius: 4,
     elevation: 3,

@@ -1,6 +1,7 @@
 import { StyleSheet, Text, View, TouchableHighlight } from 'react-native';
 import { Check } from './Check';
 
+// Клетка
 export function Square(props) {
   return (
     <TouchableHighlight className="square" style={
@@ -12,9 +13,6 @@ export function Square(props) {
     </TouchableHighlight>
   )
 }
-
-
-
 
 const styles = {
   rectangle: {
